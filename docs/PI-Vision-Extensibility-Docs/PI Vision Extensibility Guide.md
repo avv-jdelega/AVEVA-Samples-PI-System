@@ -235,10 +235,11 @@ As a best practice, you should wrap all PI Vision symbols in an immediately-invo
      <tr>
         <td><code>configOptions</code></td>
         <td>Function</td>
-        <td><p>Optional. Controls what configuration options are available for this symbol. It takes in the symbol and returns an array of objects controlling configuration. The objects returned can contain:</p>
+        <td><p>Optional. Controls what configuration options are available for this symbol. It receives the context, clicked element, and two arrays (<code>monitorOptions</code> and <code>layoutOptions</code>) for placing menu options. Options added to these arrays can contain:</p>
         <ul>
+            <li><code>title</code>: Text that appears in the context menu when you right-click.</li>
+            <li><code>mode</code>: Opens the configuration pane; keeps it open when selecting other symbols with the same mode.</li>
             <li><code>action</code>: Callback function to execute immediately.</li>
-            <li><code>title</code>: Text that appears in the context menu when you right-click</li>
             <li><code>enabled</code>: Boolean when the menu item should be enabled.</li>
         </ul>    
 </td>
@@ -789,10 +790,76 @@ The important part of this section is the ng-model attribute. This is used to bi
 
 ### Configuration options
 
-A symbol can define the entries in a context menu that is shown when the symbol is right-clicked or after a long press with a touch-enabled device. The options are defined in the symbol definitions `configOptions` function. This function is called when the menu is opened so the list of options can be dynamically populated based on the state of the symbol that was clicked.
+A symbol can define the entries in a context menu that is shown when the symbol is right-clicked or after a long press with a touch-enabled device. The options are defined in the symbol definition's `configOptions` function. This function is called when the menu is opened so the list of options can be dynamically populated based on the state of the symbol that was clicked.
+#### Function parameters
 
-Here is an example of how to program the context menu:
+<table>
+    <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>context</code></td>
+        <td>An object describing the current symbol (see details below)</td>
+    </tr>
+    <tr>
+        <td><code>clickedElement</code></td>
+        <td>The DOM element that was clicked or touched to open the context menu</td>
+    </tr>
+    <tr>
+        <td><code>monitorOptions</code></td>
+        <td>Array for menu options that appear at the top of the context menu during monitor mode</td>
+    </tr>
+    <tr>
+        <td><code>layoutOptions</code></td>
+        <td>Array for menu options that appear at the top of the context menu during layout mode</td>
+    </tr>
+</table>
 
+The `context` object contains the following fields:
+
+- **symbol**: `symbol`
+- **config**: `symbol.Configuration`
+- **runtimeData**: `runtimeData`
+- **def**: `runtimeData.def`
+
+Add your options to either `monitorOptions` or `layoutOptions` depending on when they should be prominent.
+
+#### Adding menu options
+```javascript
+configOptions: function (context, clickedElement, monitorOptions, layoutOptions) {
+    monitorOptions.push({
+        title: 'Configure My Symbol', 
+        mode: 'configureMySymbol'
+    },
+    'separator',
+    {
+        title: 'Hide',
+        action: function (context) { 
+            context.def.configure.hide(context.symbol); 
+        }
+    });
+
+    layoutOptions.push({
+        title: 'Format Symbol', 
+        mode: 'formatSymbol'
+    });
+}
+```
+
+In the example above, the first option opens the configuration pane using the symbol's configuration template. The `mode` property causes the configuration pane to stay open if another symbol on the display is selected that supports the same mode.
+
+The second option draws a separator line in the context menu.
+
+The third option defines an immediate action that invokes a function defined on the symbol's `configure` object in the definition.
+
+The fourth option is added to `layoutOptions`, so it will appear at the top of the context menu when in layout mode.
+
+#### Legacy pattern
+
+> **Important:** This legacy pattern is not supported in PI Vision 2025.
+
+Previous versions of PI Vision supported implementations that return an array of options directly.
 ```javascript
 configOptions: function (context, clickedElement) {
     var options = [{
@@ -810,21 +877,6 @@ configOptions: function (context, clickedElement) {
     return options;
 }
 ```
-
-The first parameter passed into this function is the context object which has fields that describe the current symbol:
-
-* **symbol**: `symbol`
-* **config**: `symbol.Configuration`
-* **runtimeData**: `runtimeData`
-* **def**: `runtimeData.def`
-
-The second parameter is the DOM element that was clicked or touched to open the context menu.
-
-The first option opens the configuration pane using the symbol's configuration template. The mode property causes the configuration pane to stay open if another symbol on the display is selected that supports the same mode.
-
-The second option draws a separator line in the context menu.
-
-The third option defines an immediate action that invokes a function defined on the symbol's `configure` object in the definition.
 
 [Back to top](#top)
 
