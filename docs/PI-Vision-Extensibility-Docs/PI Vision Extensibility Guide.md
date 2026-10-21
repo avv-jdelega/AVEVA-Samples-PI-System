@@ -67,7 +67,7 @@ Starting in PI Vision 2026, the CSP header includes `default-src 'self'`. Becaus
 Connecting to 'https://mywebapiserver/piwebapi/batch' violates the following Content Security Policy directive: "default-src 'self'". Note that 'connect-src' was not explicitly set, so 'default-src' is used as a fallback. The action has been blocked.
 ```
 
-To allow these requests, add a `CspCustomPolicy` setting to the `appSettings` section of the `web.config` file in your PI Vision installation folder. Include `'self'` and every origin your symbols call:
+To allow these requests, add a `CspCustomPolicy` setting to the `appSettings` section of the `web.config` file in the root of your PI Vision installation folder. Include `'self'` and every origin your symbols call:
 
 ```xml
 <add key="CspCustomPolicy" value="connect-src 'self' https://mywebapiserver" />
